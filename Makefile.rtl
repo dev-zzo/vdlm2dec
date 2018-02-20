@@ -1,4 +1,9 @@
 CFLAGS= -Ofast -Wall -pthread -D WITH_RTL  -I /usr/local/include/librtlsdr
+# Raspberry Pi 3 optimization options
+#CFLAGS+= -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
+# Raspberry Pi Zero optimization options
+#CFLAGS+= -mcpu=arm1176jzf-s -mfpu=vfp
+
 LDLIBS= -lm -pthread  -lusb-1.0  -L/usr/local/lib -lrtlsdr -lrt
 
 CC=gcc
