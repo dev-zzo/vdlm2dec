@@ -34,70 +34,72 @@ char *jsonbuf=NULL;
 #define JSONBUFLEN 512
 
 int sockfd=-1;
+int sockfd_native=-1;
 
 extern void outxid(unsigned int vaddr,msgblk_t * blk,unsigned char *p, int len);
 extern void outacars(unsigned int vaddr,msgblk_t * blk,unsigned char *txt, int len);
 
-int initOutput(char *Rawaddr)
+int initOutput(char *Rawaddr, const char *defaultPort)
 {
 	char *addr;
 	char *port;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
+    int s;
 
-		memset(&hints, 0, sizeof hints);
-		if (Rawaddr[0] == '[') {
-			hints.ai_family = AF_INET6;
-			addr = Rawaddr + 1;
-			port = strstr(addr, "]");
-			if (port == NULL) {
-				fprintf(stderr, "Invalid IPV6 address\n");
-				return -1;
-			}
+	memset(&hints, 0, sizeof hints);
+	if (Rawaddr[0] == '[') {
+		hints.ai_family = AF_INET6;
+		addr = Rawaddr + 1;
+		port = strstr(addr, "]");
+		if (port == NULL) {
+			fprintf(stderr, "Invalid IPV6 address\n");
+			return -1;
+		}
+		*port = 0;
+		port++;
+		if (*port != ':')
+			port = defaultPort;
+		else
+			port++;
+	} else {
+		hints.ai_family = AF_UNSPEC;
+		addr = Rawaddr;
+		port = strstr(addr, ":");
+		if (port == NULL)
+			port = defaultPort;
+		else {
 			*port = 0;
 			port++;
-			if (*port != ':')
-				port = "5555";
-			else
-				port++;
-		} else {
-			hints.ai_family = AF_UNSPEC;
-			addr = Rawaddr;
-			port = strstr(addr, ":");
-			if (port == NULL)
-				port = "5555";
-			else {
-				*port = 0;
-				port++;
-			}
 		}
+	}
 
-		hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_socktype = SOCK_DGRAM;
 
-		if ((rv = getaddrinfo(addr, port, &hints, &servinfo)) != 0) {
-			fprintf(stderr, "Invalid/unknown address %s\n", addr);
-			return -1;
-		}
+	if ((rv = getaddrinfo(addr, port, &hints, &servinfo)) != 0) {
+		fprintf(stderr, "Invalid/unknown address %s\n", addr);
+		return -1;
+	}
 
-		for (p = servinfo; p != NULL; p = p->ai_next) {
-			if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+	for (p = servinfo; p != NULL; p = p->ai_next) {
+		if ((s = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
 			continue;
-			}
-
-			if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-				close(sockfd);
-				continue;
-			}
-			break;
-		}
-		if (p == NULL) {
-			fprintf(stderr, "failed to connect\n");
-			return -1;
 		}
 
-		freeaddrinfo(servinfo);
+		if (connect(s, p->ai_addr, p->ai_addrlen) == -1) {
+			close(s);
+			continue;
+		}
+		break;
+	}
+	if (p == NULL) {
+		fprintf(stderr, "failed to connect\n");
+		return -1;
+	}
+
+	freeaddrinfo(servinfo);
 	
-	return 0;
+	return s;
 }
 
 void initJson(void)

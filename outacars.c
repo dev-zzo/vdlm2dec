@@ -134,6 +134,35 @@ static int buildjson(unsigned int vaddr,acarsmsg_t * msg, int chn, int freqb, st
 	return ok;
 }
 
+extern int sockfd_native;
+
+#define STATION_ID_LENGTH 8
+
+typedef struct _acars_udp_message_header_t acars_udp_message_header_t;
+struct _acars_udp_message_header_t {
+    char station_id[STATION_ID_LENGTH];
+    unsigned int fc;
+    unsigned int timestamp;
+};
+
+typedef struct _acars_udp_message_t acars_udp_message_t;
+struct _acars_udp_message_t {
+    acars_udp_message_header_t header;
+    char payload[8192];
+};
+
+void outraw(const msgblk_t * blk, const unsigned char *txt, int len, time_t tm)
+{
+	acars_udp_message_t msg;
+
+	memset(&msg, 0, sizeof(msg));
+	strncpy(&msg.header.station_id[0], &idstation[0], STATION_ID_LENGTH);
+	msg.header.timestamp = htonl(tm);
+	msg.header.fc = htonl((unsigned)(blk->Fr / 1000.0));
+	memcpy(&msg.payload[0], &txt[0], len);
+
+	write(sockfd_native, &msg, sizeof(msg.header) + len);
+}
 
 void outacars(unsigned int vaddr,msgblk_t * blk,unsigned char *txt, int len)
 {
@@ -227,8 +256,11 @@ void outacars(unsigned int vaddr,msgblk_t * blk,unsigned char *txt, int len)
 		fflush(logfd);
 	}
 
-	if (sockfd > 0) {
+	if (sockfd >= 0) {
 		outjson();
+	}
+	if (sockfd_native >= 0) {
+		outraw();
 	}
 
 }

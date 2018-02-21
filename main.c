@@ -71,6 +71,7 @@ static void usage(void)
 	fprintf(stderr, " -J :\t\t\tjson output\n");
 	fprintf(stderr, " -q :\t\t\tquiet\n");
 	fprintf(stderr, " -j addr:port :\t\tsend to addr:port UDP packets in json\n");
+	fprintf(stderr, " -N addr:port :\t\tsend to addr:port UDP packets in native format\n");
 	fprintf(stderr, " -l logfile :\t\toutput log (stdout by default)\n");
 	exit(1);
 }
@@ -127,7 +128,11 @@ int main(int argc, char **argv)
 #endif
 		case 'j':
 			Rawaddr = optarg;
-			initOutput(Rawaddr);
+			sockfd = initOutput(Rawaddr, "5555");
+			break;
+		case 'N':
+			Rawaddr = optarg;
+			sockfd_native = initNativeOutput(Rawaddr, "13963");
 			break;
 		case 'J':
 			jsonout = 1;
