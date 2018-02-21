@@ -39,7 +39,7 @@ int sockfd_native=-1;
 extern void outxid(unsigned int vaddr,msgblk_t * blk,unsigned char *p, int len);
 extern void outacars(unsigned int vaddr,msgblk_t * blk,unsigned char *txt, int len);
 
-int initOutput(char *Rawaddr, const char *defaultPort)
+int initOutput(char *Rawaddr, char *defaultPort)
 {
 	char *addr;
 	char *port;

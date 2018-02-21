@@ -130,6 +130,6 @@ extern unsigned int reversebits(const unsigned int bits, const int n);
 extern unsigned short pppfcs16(unsigned char *cp, int len);
 extern int rs(unsigned char *data, int *eras_pos, int no_eras);
 
-extern int initOutput(char *Rawaddr, const char *defaultPort);
+extern int initOutput(char *Rawaddr, char *defaultPort);
 extern void initJson(void);
 extern void out(msgblk_t * blk, unsigned char *hdata, int l);

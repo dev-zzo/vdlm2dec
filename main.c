@@ -36,6 +36,9 @@ char *Rawaddr = NULL;
 char *idstation = NULL ;
 FILE *logfd;
 
+extern int sockfd;
+extern int sockfd_native;
+
 #ifdef WITH_RTL
 int gain = 1000;
 int ppm = 0;
@@ -95,7 +98,7 @@ int main(int argc, char **argv)
 	nbch = 0;
 	logfd = stdout;
 
-	while ((c = getopt(argc, argv, "vqrp:g:l:Jj:i")) != EOF) {
+	while ((c = getopt(argc, argv, "vqrp:g:l:Jj:N:i:")) != EOF) {
 		switch (c) {
 		case 'v':
 			verbose = 2;
@@ -132,7 +135,7 @@ int main(int argc, char **argv)
 			break;
 		case 'N':
 			Rawaddr = optarg;
-			sockfd_native = initNativeOutput(Rawaddr, "13963");
+			sockfd_native = initOutput(Rawaddr, "13963");
 			break;
 		case 'J':
 			jsonout = 1;

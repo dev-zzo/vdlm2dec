@@ -260,7 +260,7 @@ void outacars(unsigned int vaddr,msgblk_t * blk,unsigned char *txt, int len)
 		outjson();
 	}
 	if (sockfd_native >= 0) {
-		outraw();
+		outraw(blk, txt, len - 3, blk->tv.tv_sec);
 	}
 
 }
